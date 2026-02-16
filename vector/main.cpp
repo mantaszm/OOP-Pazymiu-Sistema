@@ -18,8 +18,7 @@ int main() {
     Studentas temp;
 
     while (true) {
-        std::string stringTemp;
-        
+
         std::cout << "Norint baigti parasykite 'baigti'\nVardas: ";
         std::cin.getline(temp.vardas, 14);
         if (std::string(temp.vardas) == "baigti") break;
@@ -55,6 +54,16 @@ int main() {
                 break;
             }
         }
+        
+        std::sort(nd_pazymiai.begin(), nd_pazymiai.end());
+
+        double nd_med = 0.0;
+
+        if (kiek % 2 == 0 && kiek != 0)
+            nd_med = (nd_pazymiai[kiek/2 - 1] + nd_pazymiai[kiek/2]) / 2.0;
+        else
+            nd_med = nd_pazymiai[kiek/2];
+        temp.namuDarbaiMed100 = static_cast<uint16_t>(nd_med * 100);
 
         if (kiek > 0)
             temp.namuDarbaiVid100 =
