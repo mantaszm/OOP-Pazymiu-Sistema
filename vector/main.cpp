@@ -18,6 +18,7 @@ int main() {
     Studentas temp;
 
     while (true) {
+        std::string stringTemp;
 
         std::cout << "Norint baigti parasykite 'baigti'\nVardas: ";
         std::cin.getline(temp.vardas, 14);
@@ -82,19 +83,23 @@ int main() {
               << std::setw(14) << "Vardas"
               << std::setw(17) << "Pavarde"
               << std::setw(17) << "Galutinis(Vid.)"
+              << std::setw(17) << "Galutinis(Med.)"
               << "\n";
 
-    std::cout << std::string(48, '-') << "\n";
+    std::cout << std::string(65, '-') << "\n";
     std::cout << std::fixed << std::setprecision(2);
 
     for (const auto& i : studentai) {
         const double galutinisVid =
             i.namuDarbaiVid100 * 0.004 + i.egzaminas * 0.6;
+        const double galutinisMed = 
+            i.namuDarbaiMed100 * 0.004 + i.egzaminas * 0.6;
 
         std::cout << std::left
                   << std::setw(14) << i.vardas
                   << std::setw(17) << i.pavarde
                   << std::setw(17) << galutinisVid
+                  << std::setw(17) << galutinisMed
                   << "\n";
     }
 
