@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cstdint>
 #include <iomanip>
 #include <iostream>
@@ -6,6 +7,7 @@
 
 struct Studentas{
     uint16_t namuDarbaiVid100{}; // vidurkis * 100
+    uint16_t namuDarbaiMed100{};
     uint8_t egzaminas{};
     char vardas[14]{};
     char pavarde[17]{};
@@ -17,7 +19,7 @@ int main() {
 
     while (true) {
         std::string stringTemp;
-
+        
         std::cout << "Norint baigti parasykite 'baigti'\nVardas: ";
         std::cin.getline(temp.vardas, 14);
         if (std::string(temp.vardas) == "baigti") break;
