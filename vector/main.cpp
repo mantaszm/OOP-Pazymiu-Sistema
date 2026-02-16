@@ -31,31 +31,45 @@ int main() {
         int kiek = 0;
         std::vector<int> nd_pazymiai;
 
-        std::cout << "Iveskite namu darbu pazymius (rasykite 'baigti' kai baigsite):\n";
-
-        while (true) {
-            std::cout << "Pazymys: ";
-            std::getline(std::cin, stringTemp);
-            if (stringTemp == "baigti") break;
-
-            try {
-                int paz = std::stoi(stringTemp);
-
-                if (paz < 0 || paz > 10) {
-                    std::cout << "Netinkamas pazymys (0-10), baigiame ivedima.\n";
-                    break;
-                }
-
-                suma += paz;
-                nd_pazymiai.push_back(paz);
-                kiek++;
-            }
-            catch (...) {
-                std::cout << "Netinkama ivestis, baigiame ivedima.\n";
-                break;
-            }
-        }
+        std::cout << "Iveskite namu darbu pazymius (atskirtus tarpais):";
+        std::getline(std::cin, stringTemp);
         
+        size_t pos = 0;
+
+        while (pos < stringTemp.size()) {
+
+        while (pos < stringTemp.size() && stringTemp[pos] == ' ')
+            pos++;
+
+        if (pos >= stringTemp.size()) break;
+
+        size_t next = stringTemp.find(' ', pos);
+        std::string token;
+
+        if (next == std::string::npos) {
+            token = stringTemp.substr(pos);
+            pos = stringTemp.size();
+        } else {
+            token = stringTemp.substr(pos, next - pos);
+            pos = next + 1;
+        }
+
+        try {
+            int paz = std::stoi(token);
+
+            if (paz < 0 || paz > 10) {
+                std::cout << "Netinkamas pazymys (0-10). Ignoruojamas.\n";
+                continue;
+            }
+
+            suma += paz;
+            nd_pazymiai.push_back(paz);
+            kiek++;
+        }
+        catch (...) {
+            std::cout << "Netinkama ivestis: " << token << " (ignoruojama)\n";
+        }
+    }
         std::sort(nd_pazymiai.begin(), nd_pazymiai.end());
 
         double nd_med = 0.0;
@@ -92,7 +106,7 @@ int main() {
     for (const auto& i : studentai) {
         const double galutinisVid =
             i.namuDarbaiVid100 * 0.004 + i.egzaminas * 0.6;
-        const double galutinisMed = 
+        const double galutinisMed =
             i.namuDarbaiMed100 * 0.004 + i.egzaminas * 0.6;
 
         std::cout << std::left
