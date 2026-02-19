@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <random>
+#include <cstring>
 
 struct Studentas{
     uint16_t namuDarbaiVid100{};
@@ -17,30 +18,100 @@ int main() {
     Studentas* studentai = nullptr;
     size_t studentuKiekis = 0;
     size_t talpa = 0;
+    int kiekND = 0;
+    int mokiniai = 0;
 
     Studentas temp;
-    bool demo = false;
+    int mode = 0;
 
-    std::cout <<"Ar cia yra demo? (y/n) default: n ";
-    char isDemo[2]{};
-    std::cin.getline(isDemo, 2);
-    if (isDemo[0] == 'y' || isDemo[0] == 'Y') {
-        demo = true;
+    std::cout <<"Rezimas:\n1 - rankinis\n2 - random pazymiai\n3 - random vardai ir pazymiai\n";
+    char whatMode[2]{};
+    std::cin.getline(whatMode, 2);
+    switch (whatMode[0]) {
+        case '1':
+            mode = 1;
+            break;
+
+        case '2': {
+            mode = 2;
+            std::cout <<"Namu darbu pazymiu skaicius: ";
+            std::string ndSkaicius;
+            std::getline(std::cin, ndSkaicius);
+            try {
+                kiekND = std::stoi(ndSkaicius);
+            }
+            catch (...) {
+                std::cout <<"Ne skaicius!";
+                return 0;
+            }
+            break;
+        }
+
+        case '3': {
+            mode = 3;
+            std::cout <<"Namu darbu pazymiu skaicius:\n";
+            try {
+                std::cin >> kiekND;
+                std::cout <<"Mokiniu kiekis:\n";
+                std::cin >> mokiniai;
+            }
+            catch (...) {
+                std::cout <<"Ne skaicius!";
+                return 0;
+            }
+            break;
+        }
+
+        default:
+            std::cout <<"Netinkamas";
+            return 0;
     }
 
-    while (true) {
+    while (!(mode == 3 and mokiniai == 0)) {
         std::string stringTemp;
 
         std::random_device rd;
         std::mt19937 gen(rd());
         std::uniform_int_distribution<> distrib(0, 10);
 
-        std::cout << "Norint baigti parasykite 'baigti'\nVardas: ";
-        std::cin.getline(temp.vardas, 14);
-        if (std::string(temp.vardas) == "baigti") break;
+        if (mode != 3){
+            std::cout << "Norint baigti parasykite 'baigti'\nVardas: ";
+            std::cin.getline(temp.vardas, 14);
+            if (std::string(temp.vardas) == "baigti") break;
 
-        std::cout << "Pavarde: ";
-        std::cin.getline(temp.pavarde, 17);
+            std::cout << "Pavarde: ";
+            std::cin.getline(temp.pavarde, 17);
+        }
+        else {
+            std::string vardas[11] = {
+                "Jonas",
+                "Mantas",
+                "Lukas",
+                "Tomas",
+                "Dovydas",
+                "Karolis",
+                "Rokas",
+                "Paulius",
+                "Andrius",
+                "Gabrielius",
+                "Dominykas"
+            };
+            std::string pavarde[11] = {
+                "Kazlauskas",
+                "Jankauskas",
+                "Petrauskas",
+                "Balciunas",
+                "Zukauskas",
+                "Vasiliauskas",
+                "Butkus",
+                "Navickas",
+                "Urbonas",
+                "Kavaliauskas",
+                "Stankevicius"
+            };
+            std::strcpy(temp.vardas, vardas[distrib(gen)].c_str());
+            std::strcpy(temp.pavarde, pavarde[distrib(gen)].c_str());
+        }
 
         int suma = 0;
         int kiek = 0;
@@ -49,7 +120,7 @@ int main() {
         size_t nd_kiekis = 0;
         size_t nd_talpa = 0;
 
-        if (!demo) {
+        if (mode == 1) {
             std::cout << "Iveskite namu darbu pazymius (atskirtus tarpais): ";
             std::getline(std::cin, stringTemp);
 
@@ -100,12 +171,7 @@ int main() {
             }
         }
         else {
-            std::cout <<"Namu darbu pazymiu skaicius: ";
-            std::getline(std::cin, stringTemp);
-
             try {
-                int kiekND = std::stoi(stringTemp);
-
                 for (int i = 0; i < kiekND; i++) {
                     int paz = distrib(gen);
 
@@ -128,6 +194,7 @@ int main() {
                 delete[] nd_pazymiai;
                 continue;
             }
+            temp.egzaminas = distrib(gen);
         }
 
         std::sort(nd_pazymiai, nd_pazymiai + nd_kiekis);
@@ -149,9 +216,11 @@ int main() {
         else
             temp.namuDarbaiVid100 = 0;
 
-        std::cout << "Egzamino pazymys: ";
-        std::getline(std::cin, stringTemp);
-        temp.egzaminas = static_cast<uint8_t>(std::stoi(stringTemp));
+        if (mode == 1) {
+            std::cout << "Egzamino pazymys: ";
+            std::getline(std::cin, stringTemp);
+            temp.egzaminas = static_cast<uint8_t>(std::stoi(stringTemp));
+        }
 
         delete[] nd_pazymiai;
 
@@ -167,6 +236,7 @@ int main() {
         }
 
         studentai[studentuKiekis++] = temp;
+        mokiniai--;
     }
 
     std::cout << std::left
