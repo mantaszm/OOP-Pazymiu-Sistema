@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <iomanip>
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <string>
 #include <random>
@@ -15,7 +16,71 @@ struct Studentas{
     char pavarde[17]{};
 };
 
-int main() {
+std::vector<Studentas> readFile(const std::string& filename) {
+    std::ifstream in(filename);
+    std::vector<Studentas> studentai;
+
+    if (!in) {
+        std::cout << "Nepavyko atidaryti failo\n";
+        return studentai;
+    }
+
+    std::string line;
+    std::getline(in, line); // skip header
+
+    while (std::getline(in, line)) {
+        std::stringstream ss(line);
+        Studentas temp;
+
+        std::string vardas, pavarde;
+        ss >> vardas >> pavarde;
+
+        std::strcpy(temp.vardas, vardas.c_str());
+        std::strcpy(temp.pavarde, pavarde.c_str());
+
+        std::vector<int> nd;
+        int x;
+
+        while (ss >> x) {
+            nd.push_back(x);
+        }
+
+        if (nd.empty()) continue;
+
+        temp.egzaminas = nd.back();
+        nd.pop_back();
+
+        int suma = 0;
+        for (int v : nd) suma += v;
+
+        std::sort(nd.begin(), nd.end());
+
+        double med = 0.0;
+        int kiek = nd.size();
+
+        if (kiek == 0) {
+            med = 0.0;
+        }
+        else if (kiek % 2 == 0) {
+            med = (nd[kiek/2 - 1] + nd[kiek/2]) / 2.0;
+        }
+        else {
+            med = nd[kiek/2];
+        }
+
+        temp.namuDarbaiVid100 =
+            (kiek > 0) ? static_cast<uint16_t>((double)suma / kiek * 100) : 0;
+
+        temp.namuDarbaiMed100 =
+            static_cast<uint16_t>(med * 100);
+
+        studentai.push_back(temp);
+    }
+
+    return studentai;
+}
+
+std::vector<Studentas> readTerminal() {
     std::vector<Studentas> studentai;
     Studentas temp;
 
@@ -42,7 +107,7 @@ int main() {
             }
             catch (...) {
                 std::cout <<"Ne skaicius!";
-                return 0;
+                return std::vector<Studentas>{};
             }
             break;
         }
@@ -58,14 +123,14 @@ int main() {
             }
             catch (...) {
                 std::cout <<"Ne skaicius!";
-                return 0;
+                return std::vector<Studentas>{};
             }
             break;
         }
 
         default:
             std::cout <<"Netinkamas";
-            return 0;
+            return std::vector<Studentas>{};
     }
 
     while (!(mode == 3 && mokiniai == 0)) {
@@ -112,13 +177,13 @@ int main() {
 
                 if (pos >= stringTemp.size()) break;
 
-                size_t next = stringTemp.find(' ', pos);
+                size_t next = stringTemp.find(' ', pos);//tokeno pabaiga
                 std::string token;
 
-                if (next == std::string::npos) {
+                if (next == std::string::npos) {//paskutinis nes neranda
                     token = stringTemp.substr(pos);
                     pos = stringTemp.size();
-                } else {
+                } else {//rado kita zodi
                     token = stringTemp.substr(pos, next - pos);
                     pos = next + 1;
                 }
@@ -183,6 +248,34 @@ int main() {
         mokiniai--;
     }
 
+    return studentai;
+}
+
+int main() {
+    std::vector<Studentas> studentai;
+
+    std::cout << "Pasirinkite duomenu saltini:\n";
+    std::cout << "1 - terminalas\n2 - failas\n";
+
+    char pasirinkimas;
+    std::cin >> pasirinkimas;
+    std::cin.ignore();
+
+    if (pasirinkimas == '1') {
+        studentai = readTerminal();
+    }
+    else if (pasirinkimas == '2') {
+        std::string failas;
+        std::cout << "Iveskite failo pavadinima: ";
+        std::getline(std::cin, failas);
+
+        studentai = readFile(failas);
+    }
+    else {
+        std::cout << "Netinkamas pasirinkimas\n";
+        return 0;
+    }
+
     std::cout << std::left
               << std::setw(14) << "Vardas"
               << std::setw(17) << "Pavarde"
@@ -194,17 +287,13 @@ int main() {
     std::cout << std::fixed << std::setprecision(2);
 
     for (const auto& i : studentai) {
-        const double galutinisVid =
-            i.namuDarbaiVid100 * 0.004 + i.egzaminas * 0.6;
-        const double galutinisMed =
-            i.namuDarbaiMed100 * 0.004 + i.egzaminas * 0.6;
+        double vid = i.namuDarbaiVid100 * 0.004 + i.egzaminas * 0.6;
+        double med = i.namuDarbaiMed100 * 0.004 + i.egzaminas * 0.6;
 
-        std::cout << std::left
-                  << std::setw(14) << i.vardas
+        std::cout << std::setw(14) << i.vardas
                   << std::setw(17) << i.pavarde
-                  << std::setw(17) << galutinisVid
-                  << std::setw(17) << galutinisMed
-                  << "\n";
+                  << std::setw(17) << vid
+                  << std::setw(17) << med << "\n";
     }
 
     return 0;
