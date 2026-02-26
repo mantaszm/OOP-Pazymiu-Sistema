@@ -359,6 +359,52 @@ int main() {
         return 0;
     }
 
+    std::cout << "\nRikiavimas:\n";
+    std::cout << "1 - Vardas\n";
+    std::cout << "2 - Pavarde\n";
+    std::cout << "3 - Galutinis (Vid.)\n";
+    std::cout << "4 - Galutinis (Med.)\n";
+
+    char rikiavimas;
+    std::cin >> rikiavimas;
+
+    switch (rikiavimas) {
+        case '1':
+            std::sort(studentai, studentai + studentuKiekis,
+                [](const Studentas& a, const Studentas& b) {
+                    return std::strcmp(a.vardas, b.vardas) < 0;
+                });
+            break;
+
+        case '2':
+            std::sort(studentai, studentai + studentuKiekis,
+                [](const Studentas& a, const Studentas& b) {
+                    return std::strcmp(a.pavarde, b.pavarde) < 0;
+                });
+            break;
+
+        case '3':
+            std::sort(studentai, studentai + studentuKiekis,
+                [](const Studentas& a, const Studentas& b) {
+                    double vidA = a.namuDarbaiVid100 * 0.004 + a.egzaminas * 0.6;
+                    double vidB = b.namuDarbaiVid100 * 0.004 + b.egzaminas * 0.6;
+                    return vidA < vidB;
+                });
+            break;
+
+        case '4':
+            std::sort(studentai, studentai + studentuKiekis,
+                [](const Studentas& a, const Studentas& b) {
+                    double medA = a.namuDarbaiMed100 * 0.004 + a.egzaminas * 0.6;
+                    double medB = b.namuDarbaiMed100 * 0.004 + b.egzaminas * 0.6;
+                    return medA < medB;
+                });
+            break;
+
+        default:
+            std::cout << "Neteisingas pasirinkimas, nerikiuojama.\n";
+    }
+
     std::cout << std::left
               << std::setw(14) << "Vardas"
               << std::setw(17) << "Pavarde"
