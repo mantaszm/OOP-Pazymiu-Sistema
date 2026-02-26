@@ -5,6 +5,8 @@
 #include <string>
 #include <random>
 #include <cstring>
+#include <fstream>
+#include <sstream>
 
 struct Studentas{
     uint16_t namuDarbaiVid100{};
@@ -14,9 +16,100 @@ struct Studentas{
     char pavarde[17]{};
 };
 
-int main() {
+Studentas* readFile(const std::string& filename, size_t& studentuKiekis) {
+    std::ifstream in(filename);
+    if (!in) {
+        std::cout << "Nepavyko atidaryti failo\n";
+        return nullptr;
+    }
+
     Studentas* studentai = nullptr;
-    size_t studentuKiekis = 0;
+    size_t talpaStudentams = 0;   // renamed to avoid shadowing
+    studentuKiekis = 0;
+
+    std::string line;
+    std::getline(in, line); // skip header
+
+    while (std::getline(in, line)) {
+        std::stringstream ss(line);
+        Studentas temp;
+
+        std::string vardas, pavarde;
+        ss >> vardas >> pavarde;
+
+        std::strcpy(temp.vardas, vardas.c_str());
+        std::strcpy(temp.pavarde, pavarde.c_str());
+
+        int* nd = nullptr;
+        size_t kiek = 0;
+        size_t talpaND = 0;
+        int suma = 0;
+        int paz;
+
+        // read grades
+        while (ss >> paz) {
+            if (kiek == talpaND) {
+                talpaND = (talpaND == 0) ? 1 : talpaND * 2;
+                int* naujas = new int[talpaND];
+
+                for (size_t i = 0; i < kiek; i++)
+                    naujas[i] = nd[i];
+
+                delete[] nd;
+                nd = naujas;
+            }
+
+            nd[kiek++] = paz;
+        }
+
+        if (kiek < 1) {
+            delete[] nd;
+            continue;
+        }
+
+        temp.egzaminas = nd[kiek - 1];
+        kiek--;
+
+        for (size_t i = 0; i < kiek; i++)
+            suma += nd[i];
+
+        std::sort(nd, nd + kiek);
+
+        double med = 0.0;
+        if (kiek > 0) {
+            if (kiek % 2 == 0)
+                med = (nd[kiek/2 - 1] + nd[kiek/2]) / 2.0;
+            else
+                med = nd[kiek/2];
+        }
+
+        temp.namuDarbaiVid100 =
+            (kiek > 0) ? (uint16_t)((double)suma / kiek * 100) : 0;
+
+        temp.namuDarbaiMed100 = (uint16_t)(med * 100);
+
+        // resize student array
+        if (studentuKiekis == talpaStudentams) {
+            talpaStudentams = (talpaStudentams == 0) ? 1 : talpaStudentams * 2;
+            Studentas* naujas = new Studentas[talpaStudentams];
+
+            for (size_t i = 0; i < studentuKiekis; i++)
+                naujas[i] = studentai[i];
+
+            delete[] studentai;
+            studentai = naujas;
+        }
+
+        studentai[studentuKiekis++] = temp;
+
+        delete[] nd; // 🔥 IMPORTANT: prevent memory leak
+    }
+
+    return studentai;
+}
+
+Studentas* readTerminal(size_t& studentuKiekis) {
+    Studentas* studentai = nullptr;
     size_t talpa = 0;
     int kiekND = 0;
     int mokiniai = 0;
@@ -42,7 +135,7 @@ int main() {
             }
             catch (...) {
                 std::cout <<"Ne skaicius!";
-                return 0;
+                return nullptr;
             }
             break;
         }
@@ -57,14 +150,14 @@ int main() {
             }
             catch (...) {
                 std::cout <<"Ne skaicius!";
-                return 0;
+                return nullptr;
             }
             break;
         }
 
         default:
             std::cout <<"Netinkamas";
-            return 0;
+            return nullptr;
     }
 
     while (!(mode == 3 and mokiniai == 0)) {
@@ -133,13 +226,13 @@ int main() {
 
                 if (pos >= stringTemp.size()) break;
 
-                size_t next = stringTemp.find(' ', pos);
+                size_t next = stringTemp.find(' ', pos);//tokeno pabaiga
                 std::string token;
 
-                if (next == std::string::npos) {
+                if (next == std::string::npos) {//paskutinis nes neranda
                     token = stringTemp.substr(pos);
                     pos = stringTemp.size();
-                } else {
+                } else {//rado kita zodi
                     token = stringTemp.substr(pos, next - pos);
                     pos = next + 1;
                 }
@@ -239,6 +332,33 @@ int main() {
         mokiniai--;
     }
 
+    return studentai;
+}
+
+int main() {
+    size_t studentuKiekis = 0;
+    Studentas* studentai = nullptr;
+
+    std::cout << "Pasirinkite ivesti:\n1 - terminalas\n2 - failas\n";
+    char pasirinkimas;
+    std::cin >> pasirinkimas;
+    std::cin.ignore();
+
+    if (pasirinkimas == '1') {
+        studentai = readTerminal(studentuKiekis);
+    }
+    else if (pasirinkimas == '2') {
+        std::string failas;
+        std::cout << "Iveskite failo pavadinima: ";
+        std::getline(std::cin, failas);
+
+        studentai = readFile(failas, studentuKiekis);
+    }
+    else {
+        std::cout << "Blogas pasirinkimas\n";
+        return 0;
+    }
+
     std::cout << std::left
               << std::setw(14) << "Vardas"
               << std::setw(17) << "Pavarde"
@@ -249,22 +369,15 @@ int main() {
     std::cout << std::string(65, '-') << "\n";
     std::cout << std::fixed << std::setprecision(2);
 
-    for (size_t idx = 0; idx < studentuKiekis; idx++) {
-        const Studentas& i = studentai[idx];
+    for (size_t i = 0; i < studentuKiekis; i++) {
+        double vid = studentai[i].namuDarbaiVid100 * 0.004 + studentai[i].egzaminas * 0.6;
+        double med = studentai[i].namuDarbaiMed100 * 0.004 + studentai[i].egzaminas * 0.6;
 
-        double galutinisVid =
-            i.namuDarbaiVid100 * 0.004 + i.egzaminas * 0.6;
-        double galutinisMed =
-            i.namuDarbaiMed100 * 0.004 + i.egzaminas * 0.6;
-
-        std::cout << std::left
-                  << std::setw(14) << i.vardas
-                  << std::setw(17) << i.pavarde
-                  << std::setw(17) << galutinisVid
-                  << std::setw(17) << galutinisMed
-                  << "\n";
+        std::cout << std::setw(14) << studentai[i].vardas
+                  << std::setw(17) << studentai[i].pavarde
+                  << std::setw(17) << vid
+                  << std::setw(17) << med << "\n";
     }
 
     delete[] studentai;
-    return 0;
 }
