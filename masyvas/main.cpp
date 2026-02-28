@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <iomanip>
 #include <iostream>
+#include <chrono>
 #include <string>
 #include <random>
 #include <cstring>
@@ -346,27 +347,21 @@ int main() {
 
     if (pasirinkimas == '1') {
         studentai = readTerminal(studentuKiekis);
-    }
-    else if (pasirinkimas == '2') {
+    } else if (pasirinkimas == '2') {
         std::string failas;
         std::cout << "Iveskite failo pavadinima: ";
         std::getline(std::cin, failas);
-
         studentai = readFile(failas, studentuKiekis);
-    }
-    else {
+    } else {
         std::cout << "Blogas pasirinkimas\n";
         return 0;
     }
 
-    std::cout << "\nRikiavimas:\n";
-    std::cout << "1 - Vardas\n";
-    std::cout << "2 - Pavarde\n";
-    std::cout << "3 - Galutinis (Vid.)\n";
-    std::cout << "4 - Galutinis (Med.)\n";
-
+    std::cout << "\nRikiavimas:\n1 - Vardas\n2 - Pavarde\n3 - Galutinis (Vid.)\n4 - Galutinis (Med.)\n";
     char rikiavimas;
     std::cin >> rikiavimas;
+
+    auto start = std::chrono::high_resolution_clock::now();
 
     switch (rikiavimas) {
         case '1':
@@ -405,24 +400,58 @@ int main() {
             std::cout << "Neteisingas pasirinkimas, nerikiuojama.\n";
     }
 
-    std::cout << std::left
-              << std::setw(14) << "Vardas"
-              << std::setw(17) << "Pavarde"
-              << std::setw(17) << "Galutinis(Vid.)"
-              << std::setw(17) << "Galutinis(Med.)"
-              << "\n";
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed = end - start;
 
-    std::cout << std::string(65, '-') << "\n";
-    std::cout << std::fixed << std::setprecision(2);
+    char pasirinkimasOutput;
+    std::cout << "Kur rodyti rezultatus? (1 - ekranas, 2 - failas): ";
+    std::cin >> pasirinkimasOutput;
+    std::cin.ignore();
+
+    std::ostream* out = &std::cout;
+    std::ofstream outFile;
+    if (pasirinkimasOutput == '2') {
+        std::string outputFileName;
+        std::cout << "Iveskite failo pavadinima: ";
+        std::getline(std::cin, outputFileName);
+
+        outFile.open(outputFileName);
+        if (!outFile) {
+            std::cout << "Nepavyko sukurti failo.\n";
+            delete[] studentai;
+            return 1;
+        }
+        out = &outFile;
+    }
+
+    *out << std::left
+         << std::setw(14) << "Vardas"
+         << std::setw(17) << "Pavarde"
+         << std::setw(17) << "Galutinis(Vid.)"
+         << std::setw(17) << "Galutinis(Med.)"
+         << "\n";
+
+    *out << std::string(65, '-') << "\n";
+    *out << std::fixed << std::setprecision(2);
 
     for (size_t i = 0; i < studentuKiekis; i++) {
         double vid = studentai[i].namuDarbaiVid100 * 0.004 + studentai[i].egzaminas * 0.6;
         double med = studentai[i].namuDarbaiMed100 * 0.004 + studentai[i].egzaminas * 0.6;
 
-        std::cout << std::setw(14) << studentai[i].vardas
-                  << std::setw(17) << studentai[i].pavarde
-                  << std::setw(17) << vid
-                  << std::setw(17) << med << "\n";
+        *out << std::setw(14) << studentai[i].vardas
+             << std::setw(17) << studentai[i].pavarde
+             << std::setw(17) << vid
+             << std::setw(17) << med << "\n";
+    }
+
+    if (studentuKiekis!=0) {
+        double total = elapsed.count();
+        double avg = total / studentuKiekis;
+
+        std::cout << "\n--- Laiko matavimas ---\n";
+        std::cout << "Bendras laikas: " << total << " s\n";
+        std::cout << "Studentu kiekis: " << studentuKiekis << "\n";
+        std::cout << "Vidutinis laikas/studentui: " << avg << " s\n";
     }
 
     delete[] studentai;
