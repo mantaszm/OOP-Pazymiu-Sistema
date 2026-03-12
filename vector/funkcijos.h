@@ -23,5 +23,6 @@ struct Studentas{
 
 std::vector<Studentas> readFile(const std::string& filename);
 std::vector<Studentas> readTerminal();
+void generateFile(int kiekStud, int kiekND, std::string fileName);
 
 #endif
