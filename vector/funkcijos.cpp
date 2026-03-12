@@ -1,6 +1,6 @@
 #include "funkcijos.h"
 
-std::vector<Studentas> readFile(const std::string& filename) {
+std::vector<Studentas> readFile(const std::string& filename, bool saveND) {
     std::ifstream in(filename);
     std::vector<Studentas> studentai;
 
@@ -22,7 +22,7 @@ std::vector<Studentas> readFile(const std::string& filename) {
         std::strcpy(temp.vardas, vardas.c_str());
         std::strcpy(temp.pavarde, pavarde.c_str());
 
-        std::vector<int> nd;
+        std::vector<short int> nd;
         int x;
 
         while (ss >> x) {
@@ -36,7 +36,7 @@ std::vector<Studentas> readFile(const std::string& filename) {
 
         int suma = 0;
         for (int v : nd) suma += v;
-
+        if(saveND)temp.ND = nd;
         std::sort(nd.begin(), nd.end());
 
         double med = 0.0;
@@ -269,3 +269,48 @@ void generateFile(int kiekStud, int kiekND, std::string fileName){
     }
 }
 
+void splitStudents(std::string dataFileName, std::string newFileName){
+
+    std::vector<Studentas> mokiniai = readFile(dataFileName, true);
+
+    std::ofstream outGood("good_" + newFileName);
+    std::ofstream outBad("bad_" + newFileName);
+
+    if (!outGood || !outBad) {
+        std::cout << "Nepavyko sukurti failo.\n";
+        return;
+    }
+
+    if (mokiniai.empty()) return;
+
+    int kiekND = mokiniai[0].ND.size();
+
+    auto printHeader = [&](std::ostream& out){
+        out << std::left
+            << std::setw(14) << "Vardas"
+            << std::setw(17) << "Pavarde";
+
+        for(int i = 1; i <= kiekND; i++)
+            out << std::setw(10) << ("ND" + std::to_string(i));
+
+        out << std::setw(10) << "Egz." << "\n";
+    };
+
+    printHeader(outGood);
+    printHeader(outBad);
+
+    for(const auto& s : mokiniai){
+
+        std::ostream& out =
+            (s.namuDarbaiVid100 * 0.01 >= 5) ? outGood : outBad;
+
+        out << std::left
+            << std::setw(14) << s.vardas
+            << std::setw(17) << s.pavarde;
+
+        for(auto nd : s.ND)
+            out << std::setw(10) << nd;
+
+        out << std::setw(10) << (int)s.egzaminas << "\n";
+    }
+}
