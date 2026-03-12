@@ -26,5 +26,8 @@ std::vector<Studentas> readFile(const std::string& filename, bool saveND=false);
 std::vector<Studentas> readTerminal();
 void generateFile(int kiekStud, int kiekND, std::string fileName);
 void splitStudents(std::string dataFileName, std::string newFileName);
+void testFileCreation(int kiekStud, int kiekND, const std::string& fileName);
+void testDataProcessing(const std::string& fileName);
+void testTime(int testSize, int ndSize);
 
 #endif
