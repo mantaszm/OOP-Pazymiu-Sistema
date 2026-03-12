@@ -234,3 +234,38 @@ std::vector<Studentas> readTerminal() {
 
     return studentai;
 }
+
+void generateFile(int kiekStud, int kiekND, std::string fileName){
+    
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> distrib(0, 10);
+
+    
+    std::ostream* out = &std::cout;
+    std::ofstream outFile;
+    outFile.open(fileName);
+    if (!outFile) {
+        std::cout << "Nepavyko sukurti failo.\n";
+        return;
+    }
+    out = &outFile;
+    *out << std::left
+         << std::setw(14) << "Vardas"
+         << std::setw(17) << "Pavarde";
+    for (int i = 1; i <= kiekND; i++){
+        *out << std::setw(10) << ("ND" + std::to_string(i));
+    }
+    *out << std::setw(10) << "Egz." << "\n";
+
+    for (int i = 1; i <= kiekStud; i++){
+        *out << std::left
+             << std::setw(14) << ("Vardas" + std::to_string(i))
+             << std::setw(17) << ("Pavarde" + std::to_string(i));
+        for (int i = 0; i <= kiekND; i++){
+            *out << std::setw(10) << distrib(gen);
+        }
+        *out <<"\n";
+    }
+}
+
