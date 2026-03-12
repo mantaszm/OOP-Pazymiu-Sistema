@@ -3,7 +3,7 @@
 int main() {
     std::vector<Studentas> studentai;
 
-    std::cout << "Pasirinkite duomenu saltini:\n1 - terminalas\n2 - failas\n";
+    std::cout << "Pasirinkite:\n1 - mokiniu ivestis terminale\n2 - mokiniu ivestis is failo\n3 - generuoti faila\n";
     char pasirinkimas;
     std::cin >> pasirinkimas;
     std::cin.ignore();
@@ -16,6 +16,22 @@ int main() {
         std::getline(std::cin, failas);
 
         studentai = readFile(failas);
+    } else if(pasirinkimas == '3'){
+        int kiekStud, kiekND; 
+        std::string fileName;
+
+        std::cout <<"Failo pavadinimas:\n";
+        std::cin >>fileName;
+
+        std::cout <<"Kiek studentu faile:\n";
+        std::cin >> kiekStud;
+
+        std::cout <<"Kiek namu darbu pazymiu:\n";
+        std::cin >> kiekND;
+
+        generateFile(kiekStud, kiekND, fileName);
+        return 0;
+        
     } else {
         std::cout << "Netinkamas pasirinkimas\n";
         return 0;
