@@ -1,6 +1,9 @@
 #include "funkcijos.h"
 
 int main() {
+    //testTime(10000000, 15);
+    //return 0;
+
     std::vector<Studentas> studentai;
 
     std::cout << "Pasirinkite:\n1 - mokiniu ivestis terminale\n2 - mokiniu ivestis is failo\n3 - generuoti faila\n4 - padalinti mokinius i grupes is failo\n";
