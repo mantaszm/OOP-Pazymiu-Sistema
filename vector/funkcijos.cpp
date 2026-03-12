@@ -314,3 +314,103 @@ void splitStudents(std::string dataFileName, std::string newFileName){
         out << std::setw(10) << (int)s.egzaminas << "\n";
     }
 }
+
+void testFileCreation(int kiekStud, int kiekND, const std::string& fileName) {
+    auto start = std::chrono::high_resolution_clock::now();
+
+    std::ofstream out(fileName);
+    if (!out) {
+        std::cout << "Nepavyko sukurti failo.\n";
+        return;
+    }
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> distrib(0, 10);
+
+    // Header
+    out << std::left << std::setw(14) << "Vardas" << std::setw(17) << "Pavarde";
+    for(int i = 1; i <= kiekND; i++) out << std::setw(10) << ("ND" + std::to_string(i));
+    out << std::setw(10) << "Egz.\n";
+
+    // Studentai
+    for(int i = 1; i <= kiekStud; i++) {
+        out << std::left << std::setw(14) << ("Vardas" + std::to_string(i))
+            << std::setw(17) << ("Pavarde" + std::to_string(i));
+        for(int j = 0; j < kiekND; j++) out << std::setw(10) << distrib(gen);
+        out << "\n";
+    }
+
+    out.close();
+
+    auto end = std::chrono::high_resolution_clock::now();
+    std::cout << "Failo sukurimo laikas: "
+              << std::chrono::duration<double>(end - start).count() << " s\n";
+}
+
+void testDataProcessing(const std::string& fileName) {
+    using namespace std::chrono;
+
+    auto t0 = high_resolution_clock::now();
+    // Skaitymas
+    std::vector<Studentas> students = readFile(fileName, true);
+    auto t1 = high_resolution_clock::now();
+
+    // Rūšiavimas į grupes
+    std::vector<Studentas> good, bad;
+    for(const auto& s : students) {
+        if(s.namuDarbaiVid100 * 0.01 >= 5) good.push_back(s);
+        else bad.push_back(s);
+    }
+    auto t2 = high_resolution_clock::now();
+
+    // Išvedimas į failus
+    std::ofstream outGood("good_" + fileName);
+    std::ofstream outBad("bad_" + fileName);
+
+    // Header
+    int kiekND = students.empty() ? 0 : students[0].ND.size();
+    auto printHeader = [&](std::ostream& out){
+        out << std::left << std::setw(14) << "Vardas"
+            << std::setw(17) << "Pavarde";
+        for(int i=1; i<=kiekND; i++) out << std::setw(10) << ("ND" + std::to_string(i));
+        out << std::setw(10) << "Egz.\n";
+    };
+    printHeader(outGood);
+    printHeader(outBad);
+
+    // Good
+    for(const auto& s : good){
+        outGood << std::left << std::setw(14) << s.vardas
+                << std::setw(17) << s.pavarde;
+        for(auto nd : s.ND) outGood << std::setw(10) << nd;
+        outGood << std::setw(10) << (int)s.egzaminas << "\n";
+    }
+
+    // Bad
+    for(const auto& s : bad){
+        outBad << std::left << std::setw(14) << s.vardas
+               << std::setw(17) << s.pavarde;
+        for(auto nd : s.ND) outBad << std::setw(10) << nd;
+        outBad << std::setw(10) << (int)s.egzaminas << "\n";
+    }
+
+    auto t3 = high_resolution_clock::now();
+
+    std::cout << "Failo nuskaitymo laikas: "
+              << duration<double>(t1 - t0).count() << " s\n";
+    std::cout << "Studentu rusiavimo laikas: "
+              << duration<double>(t2 - t1).count() << " s\n";
+    std::cout << "Surusiuotu studentu isvedimo laikas: "
+              << duration<double>(t3 - t2).count() << " s\n";
+    std::cout << "Bendras laikas: "
+              << duration<double>(t3 - t0).count() << " s\n";
+}
+
+void testTime(int testSize, int ndSize){
+    std::cout << "Dydis: " << testSize << "\n";
+    testFileCreation(testSize, ndSize, "students.txt");
+    testDataProcessing("students.txt");
+    return;
+}
+
