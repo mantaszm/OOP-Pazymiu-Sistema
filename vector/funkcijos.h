@@ -19,10 +19,12 @@ struct Studentas{
     uint8_t egzaminas{};
     char vardas[14]{};
     char pavarde[17]{};
+    std::vector<short int> ND{}; 
 };
 
-std::vector<Studentas> readFile(const std::string& filename);
+std::vector<Studentas> readFile(const std::string& filename, bool saveND=false);
 std::vector<Studentas> readTerminal();
 void generateFile(int kiekStud, int kiekND, std::string fileName);
+void splitStudents(std::string dataFileName, std::string newFileName);
 
 #endif
