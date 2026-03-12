@@ -3,7 +3,7 @@
 int main() {
     std::vector<Studentas> studentai;
 
-    std::cout << "Pasirinkite:\n1 - mokiniu ivestis terminale\n2 - mokiniu ivestis is failo\n3 - generuoti faila\n";
+    std::cout << "Pasirinkite:\n1 - mokiniu ivestis terminale\n2 - mokiniu ivestis is failo\n3 - generuoti faila\n4 - padalinti mokinius i grupes is failo\n";
     char pasirinkimas;
     std::cin >> pasirinkimas;
     std::cin.ignore();
@@ -30,6 +30,18 @@ int main() {
         std::cin >> kiekND;
 
         generateFile(kiekStud, kiekND, fileName);
+        return 0;
+        
+    } else if(pasirinkimas == '4'){
+        std::string dataFileName, newFileName;
+
+        std::cout << "Mokiniu duomenu failo pavadinimas:\n";
+        std::cin >> dataFileName;
+
+        std::cout << "Padalintu mokiniu failo pavadinimas:\n";
+        std::cin >> newFileName;
+
+        splitStudents(dataFileName, newFileName);
         return 0;
         
     } else {
