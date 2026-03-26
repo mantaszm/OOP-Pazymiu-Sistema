@@ -16,33 +16,33 @@ make
 ## Versijos
 
 ### v.pradinė
-Padarytas programos pagrindas
-Naudojami statiniai masyvai
-Rezultatas skaičiuojamas su mediana/vidurkiu
+- Padarytas programos pagrindas
+- Naudojami statiniai masyvai
+- Rezultatas skaičiuojamas su mediana/vidurkiu
 
 ### v0.1
-Galimybė generuoti pažymius
-Galimybė generuoti studentų vardus ir pavardes
-Dinaminės atminties masyvai/vektoriai
-Tvarkingesniė failų struktūra nei v.pradinė
+- Galimybė generuoti pažymius
+- Galimybė generuoti studentų vardus ir pavardes
+- Dinaminės atminties masyvai/vektoriai
+- Tvarkingesniė failų struktūra nei v.pradinė
 
 ### v0.2
-Galimybė skaityti iš failo
-Galimybė rikiuoti rezultatus
-Failo skaitymo laikas
+- Galimybė skaityti iš failo
+- Galimybė rikiuoti rezultatus
+- Failo skaitymo laikas
 
 ### v0.3
-Klaidų sugavimas
+- Klaidų sugavimas
 
 ### v0.4
-Failų generavimas
-Failų išrūšiavimas į 2 failus
-Laiko yra matavimas
+- Failų generavimas
+- Failų išrūšiavimas į 2 failus
+- Laiko yra matavimas
 
 ### v1.0
-Galima atlikti laiko testavimus su vector, list ir deque konteineriais
-Tyrimas README.md faile
-Galima paleisti su makefile
+- Galima atlikti laiko testavimus su vector, list ir deque konteineriais
+- Tyrimas README.md faile
+- Galima paleisti su makefile
 
 # Studentų duomenų tvarkymo programa – spartos analizė
 
