@@ -20,6 +20,17 @@ Išmatuoti programos veikimo laiką generuojant failus ir apdorojant studentų d
 
 ---
 
+# Paleidimas
+
+## Su `make`
+
+```bash
+make
+./programa
+```
+
+---
+
 ## 1 Tyrimas – Failo kūrimas
 
 | Studentų skaičius | Failo sukurimo laikas (s) |
@@ -57,3 +68,139 @@ Išmatuoti programos veikimo laiką generuojant failus ir apdorojant studentų d
 
 <img width="800" height="500" alt="plot" src="https://github.com/user-attachments/assets/d03636cf-086c-4895-ae7d-e7a18e3fa4f5" />
 
+# Studentų duomenų apdorojimo programa v1.0
+
+## Programos aprašymas
+
+Programa skirta studentų duomenų nuskaitymui, galutinio balo skaičiavimui, rūšiavimui ir skirstymui į dvi kategorijas:
+- **vargšiukai**
+- **kietiakai**
+
+Versijoje **v1.0** atliktas skirtingų STL konteinerių ir skirstymo strategijų efektyvumo tyrimas.
+
+---
+
+## Naudoti konteineriai
+
+Tyrime analizuoti šie konteineriai:
+- `std::vector`
+- `std::list`
+- `std::deque`
+
+---
+
+## Testavimo sistemos parametrai
+
+- **CPU:** 13th Gen Intel(R) Core(TM) i7-13650HX
+- **RAM:** 24 GB (Speed:	4800 MT/s)
+- **Diskas:** KBG60ZNT1T02 LS KIOXIA
+- **Operacinė sistema:** Windows 11 25H2
+
+---
+
+## Testavimo metodika
+
+Buvo matuojami šie žingsniai:
+1. Duomenų nuskaitymas iš failo į konteinerį
+2. Studentų rūšiavimas didėjimo tvarka
+3. Studentų padalijimas į dvi grupes
+
+Testavimui naudoti failai su šiais įrašų kiekiais:
+- 1 000
+- 10 000
+- 100 000
+- 1 000 000
+- 10 000 000
+
+Kiekvienas testas buvo vykdomas ... kartus, o lentelėse pateiktas **laikų vidurkis**.
+
+---
+
+# Konteinerių palyginimas
+
+## `std::vector` strategijų palyginimas
+
+| Įrašų kiekis | 1 strategija (s) | 2 strategija (s) | 3 strategija (s) |
+|---:|---:|---:|---:|
+| 1 000 | 0.000322 | 0.014209 | 0.000121 |
+| 10 000 | 0.002185 | 1.481250 | 0.001551 |
+| 100 000 | 0.009897 | 146.913000 | 0.012349 |
+| 1 000 000 | 0.106548 | netestuota / per lėta | 0.088860 |
+| 10 000 000 | 1.589870 | netestuota / per lėta | 1.193900 |
+
+### Pastebėjimai apie `std::vector`
+
+Atlikus testus su `std::vector` konteineriu, nustatyta, kad efektyviausia yra **3 strategija**, kuri remiasi efektyvesniu duomenų skaidymu (pvz., `partition`). Ji nuosekliai veikė greičiausiai visais testuotais duomenų dydžiais.
+
+**1 strategija** taip pat parodė gerus rezultatus ir skalavosi gana stabiliai didėjant duomenų kiekiui, tačiau buvo šiek tiek lėtesnė nei 3 strategija.
+
+**2 strategija** pasirodė esanti labai neefektyvi. Kadangi jos metu studentai yra šalinami iš `vector` konteinerio, kiekvienas šalinimas reikalauja likusių elementų perstūmimo atmintyje. Dėl to vykdymo laikas labai sparčiai auga didėjant duomenų kiekiui:
+
+- 10 000 įrašų: ~1.48 s  
+- 100 000 įrašų: ~146.9 s  
+
+Dėl šios priežasties testai su 1 000 000 įrašų nebuvo tęsiami, nes vykdymo laikas tapo itin ilgas.
+
+---
+
+## `std::list` strategijų palyginimas
+
+| Įrašų kiekis | 1 strategija (s) | 2 strategija (s) | 3 strategija (s) |
+|---:|---:|---:|---:|
+| 1 000 | 0.000229 | 0.000108 | 0.000065 |
+| 10 000 | 0.002070 | 0.001231 | 0.000469 |
+| 100 000 | 0.014920 | 0.011912 | 0.006024 |
+| 1 000 000 | 0.183009 | 0.102061 | 0.054496 |
+| 10 000 000 | 3.191050 | 1.089910 | 0.592616 |
+
+### Pastebėjimai apie `std::list`
+
+Atliekant testus su `std::list` konteineriu pastebėta, kad visos trys strategijos veikia efektyviai, tačiau aiškiai išsiskiria **3 strategija**, kuri visais atvejais buvo greičiausia.
+
+Skirtingai nei `std::vector` atveju, **2 strategija su `std::list` pasirodė esanti efektyvi**. Taip yra todėl, kad `std::list` konteineryje elementų šalinimas vyksta pastoviu laiku (O(1)), nes nereikia perstumti kitų elementų atmintyje.
+
+---
+
+## `std::deque` strategijų palyginimas
+
+| Įrašų kiekis | 1 strategija (s) | 2 strategija (s) | 3 strategija (s) |
+|---:|---:|---:|---:|
+| 1 000 | 0.000128 | 0.005950 | 0.000118 |
+| 10 000 | 0.001181 | 0.565432 | 0.001218 |
+| 100 000 | 0.007524 | 75.829300 | 0.010144 |
+| 1 000 000 | 0.084794 | netestuota / per lėta | 0.148590 |
+| 10 000 000 | 1.177900 | netestuota / per lėta | 1.276340 |
+
+### Pastebėjimai apie `std::deque`
+
+Atliekant testus su `std::deque` konteineriu pastebėta, kad efektyviausiai veikia **1 ir 3 strategijos**, kurios nenaudoja dažnų elementų šalinimų.
+
+**1 strategija** daugeliu atvejų pasirodė esanti šiek tiek greitesnė nei 3 strategija, ypač didesnių duomenų kiekių atveju:
+
+- 1 000 000 įrašų: 1 strategija – 0.084 s, 3 strategija – 0.148 s  
+- 10 000 000 įrašų: 1 strategija – 1.17 s, 3 strategija – 1.27 s  
+
+**2 strategija** pasirodė esanti labai neefektyvi, nes `std::deque` konteineryje elementų šalinimas iš vidurio yra brangi operacija. Dėl to vykdymo laikas sparčiai didėja:
+
+- 100 000 įrašų: ~75.8 s  
+
+Todėl ši strategija nėra tinkama dideliems duomenų kiekiams.
+---
+
+# Galutinės išvados
+
+- **Greičiausias konteineris:**  
+  `std::vector` (naudojant 3 strategiją) – parodė geriausius rezultatus didelių duomenų kiekių atveju.
+
+- **Greičiausia strategija:**  
+  3 strategija (`partition` / efektyvus skaidymas) – visais konteineriais veikė greičiausiai arba beveik greičiausiai.
+
+- **Lėčiausias scenarijus:**  
+  2 strategija su `std::vector` ir `std::deque`, nes dažnas elementų šalinimas sukelia dideles sąnaudas (elementų perstūmimas / brangios operacijos).  
+  Pvz.: `vector` su 100 000 įrašų – ~146.9 s, `deque` – ~75.8 s.
+
+- **Efektyviausias pasirinkimas pagal laiką:**  
+  `std::vector` + 3 strategija – geriausias bendras našumas ir labai geras skalavimasis iki 10 000 000 įrašų.
+
+- **Efektyviausias pasirinkimas pagal atmintį:**  
+  2 strategija (naudojamas tik vienas papildomas konteineris), ypač su `std::list`, nes leidžia efektyviai šalinti elementus be papildomo kopijavimo.
