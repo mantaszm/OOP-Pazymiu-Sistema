@@ -204,3 +204,5 @@ Todėl ši strategija nėra tinkama dideliems duomenų kiekiams.
 
 - **Efektyviausias pasirinkimas pagal atmintį:**  
   2 strategija (naudojamas tik vienas papildomas konteineris), ypač su `std::list`, nes leidžia efektyviai šalinti elementus be papildomo kopijavimo.
+
+<img width="1232" height="1213" alt="image" src="https://github.com/user-attachments/assets/667b38fc-7b6e-410d-b68f-8955de3f6f96" />
