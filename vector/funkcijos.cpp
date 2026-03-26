@@ -1,5 +1,9 @@
 #include "funkcijos.h"
 
+double galutinisVid(const Studentas& s) {
+    return s.namuDarbaiVid100 * 0.004 + s.egzaminas * 0.6;
+}
+
 std::vector<Studentas> readFile(const std::string& filename, bool saveND) {
     std::ifstream in(filename);
     std::vector<Studentas> studentai;
@@ -10,53 +14,56 @@ std::vector<Studentas> readFile(const std::string& filename, bool saveND) {
     }
 
     std::string line;
-    std::getline(in, line); // skip header
+    std::getline(in, line);
 
     while (std::getline(in, line)) {
         std::stringstream ss(line);
-        Studentas temp;
+        Studentas temp{};
 
         std::string vardas, pavarde;
         ss >> vardas >> pavarde;
 
-        std::strcpy(temp.vardas, vardas.c_str());
-        std::strcpy(temp.pavarde, pavarde.c_str());
+        std::strncpy(temp.vardas, vardas.c_str(), sizeof(temp.vardas) - 1);
+        temp.vardas[sizeof(temp.vardas) - 1] = '\0';
+
+        std::strncpy(temp.pavarde, pavarde.c_str(), sizeof(temp.pavarde) - 1);
+        temp.pavarde[sizeof(temp.pavarde) - 1] = '\0';
 
         std::vector<short int> nd;
-        int x;
+        int x = 0;
 
         while (ss >> x) {
-            nd.push_back(x);
+            nd.push_back(static_cast<short int>(x));
         }
 
         if (nd.empty()) continue;
 
-        temp.egzaminas = nd.back();
+        temp.egzaminas = static_cast<uint8_t>(nd.back());
         nd.pop_back();
 
         int suma = 0;
-        for (int v : nd) suma += v;
-        if(saveND)temp.ND = nd;
+        for (short int v : nd) suma += v;
+
+        if (saveND) temp.ND = nd;
+
         std::sort(nd.begin(), nd.end());
 
+        std::size_t n = nd.size();
         double med = 0.0;
-        int kiek = nd.size();
 
-        if (kiek == 0) {
-            med = 0.0;
-        }
-        else if (kiek % 2 == 0) {
-            med = (nd[kiek/2 - 1] + nd[kiek/2]) / 2.0;
-        }
-        else {
-            med = nd[kiek/2];
+        if (n > 0) {
+            if (n % 2 == 0) {
+                med = (nd[n / 2 - 1] + nd[n / 2]) / 2.0;
+            } else {
+                med = nd[n / 2];
+            }
         }
 
-        temp.namuDarbaiVid100 =
-            (kiek > 0) ? static_cast<uint16_t>((double)suma / kiek * 100) : 0;
+        temp.namuDarbaiVid100 = (n > 0)
+            ? static_cast<uint16_t>((static_cast<double>(suma) / static_cast<double>(n)) * 100.0)
+            : 0;
 
-        temp.namuDarbaiMed100 =
-            static_cast<uint16_t>(med * 100);
+        temp.namuDarbaiMed100 = static_cast<uint16_t>(med * 100.0);
 
         studentai.push_back(temp);
     }
@@ -66,13 +73,13 @@ std::vector<Studentas> readFile(const std::string& filename, bool saveND) {
 
 std::vector<Studentas> readTerminal() {
     std::vector<Studentas> studentai;
-    Studentas temp;
+    Studentas temp{};
 
     int mode = 0;
     int kiekND = 0;
     int mokiniai = 0;
 
-    std::cout <<"Rezimas:\n1 - rankinis\n2 - random pazymiai\n3 - random vardai ir pazymiai\n";
+    std::cout << "Rezimas:\n1 - rankinis\n2 - random pazymiai\n3 - random vardai ir pazymiai\n";
     char whatMode[2]{};
     std::cin.getline(whatMode, 2);
 
@@ -83,66 +90,68 @@ std::vector<Studentas> readTerminal() {
 
         case '2': {
             mode = 2;
-            std::cout <<"Namu darbu pazymiu skaicius: ";
+            std::cout << "Namu darbu pazymiu skaicius: ";
             std::string ndSkaicius;
             std::getline(std::cin, ndSkaicius);
             try {
                 kiekND = std::stoi(ndSkaicius);
-            }
-            catch (...) {
-                std::cout <<"Ne skaicius!";
-                return std::vector<Studentas>{};
+            } catch (...) {
+                std::cout << "Ne skaicius!\n";
+                return {};
             }
             break;
         }
 
         case '3': {
             mode = 3;
-            std::cout <<"Namu darbu pazymiu skaicius:\n";
+            std::cout << "Namu darbu pazymiu skaicius:\n";
             try {
                 std::cin >> kiekND;
-                std::cout <<"Mokiniu kiekis:\n";
+                std::cout << "Mokiniu kiekis:\n";
                 std::cin >> mokiniai;
                 std::cin.ignore();
-            }
-            catch (...) {
-                std::cout <<"Ne skaicius!";
-                return std::vector<Studentas>{};
+            } catch (...) {
+                std::cout << "Ne skaicius!\n";
+                return {};
             }
             break;
         }
 
         default:
-            std::cout <<"Netinkamas";
-            return std::vector<Studentas>{};
+            std::cout << "Netinkamas\n";
+            return {};
     }
 
     while (!(mode == 3 && mokiniai == 0)) {
+        temp = Studentas{};
         std::string stringTemp;
 
         std::random_device rd;
         std::mt19937 gen(rd());
         std::uniform_int_distribution<> distrib(0, 10);
 
-        if (mode != 3){
+        if (mode != 3) {
             std::cout << "Norint baigti parasykite 'baigti'\nVardas: ";
             std::cin.getline(temp.vardas, 14);
             if (std::string(temp.vardas) == "baigti") break;
 
             std::cout << "Pavarde: ";
             std::cin.getline(temp.pavarde, 17);
-        }
-        else {
-            std::string vardas[11] = {
+        } else {
+            std::string vardai[11] = {
                 "Jonas","Mantas","Lukas","Tomas","Dovydas",
                 "Karolis","Rokas","Paulius","Andrius","Gabrielius","Dominykas"
             };
-            std::string pavarde[11] = {
+            std::string pavardes[11] = {
                 "Kazlauskas","Jankauskas","Petrauskas","Balciunas","Zukauskas",
                 "Vasiliauskas","Butkus","Navickas","Urbonas","Kavaliauskas","Stankevicius"
             };
-            std::strcpy(temp.vardas, vardas[distrib(gen)].c_str());
-            std::strcpy(temp.pavarde, pavarde[distrib(gen)].c_str());
+
+            std::strncpy(temp.vardas, vardai[distrib(gen)].c_str(), sizeof(temp.vardas) - 1);
+            temp.vardas[sizeof(temp.vardas) - 1] = '\0';
+
+            std::strncpy(temp.pavarde, pavardes[distrib(gen)].c_str(), sizeof(temp.pavarde) - 1);
+            temp.pavarde[sizeof(temp.pavarde) - 1] = '\0';
         }
 
         int suma = 0;
@@ -153,43 +162,19 @@ std::vector<Studentas> readTerminal() {
             std::cout << "Iveskite namu darbu pazymius (atskirtus tarpais): ";
             std::getline(std::cin, stringTemp);
 
-            size_t pos = 0;
+            std::stringstream ss(stringTemp);
+            int paz = 0;
 
-            while (pos < stringTemp.size()) {
-                while (pos < stringTemp.size() && stringTemp[pos] == ' ')
-                    pos++;
-
-                if (pos >= stringTemp.size()) break;
-
-                size_t next = stringTemp.find(' ', pos);//tokeno pabaiga
-                std::string token;
-
-                if (next == std::string::npos) {//paskutinis nes neranda
-                    token = stringTemp.substr(pos);
-                    pos = stringTemp.size();
-                } else {//rado kita zodi
-                    token = stringTemp.substr(pos, next - pos);
-                    pos = next + 1;
+            while (ss >> paz) {
+                if (paz < 0 || paz > 10) {
+                    std::cout << "Netinkamas pazymys (0-10). Ignoruojamas.\n";
+                    continue;
                 }
-
-                try {
-                    int paz = std::stoi(token);
-
-                    if (paz < 0 || paz > 10) {
-                        std::cout << "Netinkamas pazymys (0-10). Ignoruojamas.\n";
-                        continue;
-                    }
-
-                    suma += paz;
-                    nd_pazymiai.push_back(paz);
-                    kiek++;
-                }
-                catch (...) {
-                    std::cout << "Netinkama ivestis: " << token << " (ignoruojama)\n";
-                }
+                suma += paz;
+                nd_pazymiai.push_back(paz);
+                kiek++;
             }
-        }
-        else {
+        } else {
             for (int i = 0; i < kiekND; i++) {
                 int paz = distrib(gen);
                 suma += paz;
@@ -204,21 +189,19 @@ std::vector<Studentas> readTerminal() {
 
         double nd_med = 0.0;
 
-        if (kiek == 0) {
-            nd_med = 0.0;
-        }
-        else if (kiek % 2 == 0) {
-            nd_med = (nd_pazymiai[kiek/2 - 1] + nd_pazymiai[kiek/2]) / 2.0;
-        }
-        else {
-            nd_med = nd_pazymiai[kiek/2];
+        if (kiek > 0) {
+            if (kiek % 2 == 0) {
+                nd_med = (nd_pazymiai[kiek / 2 - 1] + nd_pazymiai[kiek / 2]) / 2.0;
+            } else {
+                nd_med = nd_pazymiai[kiek / 2];
+            }
         }
 
-        temp.namuDarbaiMed100 = static_cast<uint16_t>(nd_med * 100);
+        temp.namuDarbaiMed100 = static_cast<uint16_t>(nd_med * 100.0);
 
         if (kiek > 0)
             temp.namuDarbaiVid100 =
-                static_cast<uint16_t>((static_cast<double>(suma) / kiek) * 100);
+                static_cast<uint16_t>((static_cast<double>(suma) / static_cast<double>(kiek)) * 100.0);
         else
             temp.namuDarbaiVid100 = 0;
 
@@ -228,49 +211,46 @@ std::vector<Studentas> readTerminal() {
             temp.egzaminas = static_cast<uint8_t>(std::stoi(stringTemp));
         }
 
-        studentai.emplace_back(temp);
+        studentai.push_back(temp);
         mokiniai--;
     }
 
     return studentai;
 }
 
-void generateFile(int kiekStud, int kiekND, std::string fileName){
-    
+void generateFile(int kiekStud, int kiekND, std::string fileName) {
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> distrib(0, 10);
 
-    
-    std::ostream* out = &std::cout;
-    std::ofstream outFile;
-    outFile.open(fileName);
+    std::ofstream outFile(fileName);
     if (!outFile) {
         std::cout << "Nepavyko sukurti failo.\n";
         return;
     }
-    out = &outFile;
-    *out << std::left
-         << std::setw(14) << "Vardas"
-         << std::setw(17) << "Pavarde";
-    for (int i = 1; i <= kiekND; i++){
-        *out << std::setw(10) << ("ND" + std::to_string(i));
-    }
-    *out << std::setw(10) << "Egz." << "\n";
 
-    for (int i = 1; i <= kiekStud; i++){
-        *out << std::left
-             << std::setw(14) << ("Vardas" + std::to_string(i))
-             << std::setw(17) << ("Pavarde" + std::to_string(i));
-        for (int i = 0; i <= kiekND; i++){
-            *out << std::setw(10) << distrib(gen);
+    outFile << std::left
+            << std::setw(14) << "Vardas"
+            << std::setw(17) << "Pavarde";
+
+    for (int i = 1; i <= kiekND; i++) {
+        outFile << std::setw(10) << ("ND" + std::to_string(i));
+    }
+    outFile << std::setw(10) << "Egz." << "\n";
+
+    for (int i = 1; i <= kiekStud; i++) {
+        outFile << std::left
+                << std::setw(14) << ("Vardas" + std::to_string(i))
+                << std::setw(17) << ("Pavarde" + std::to_string(i));
+
+        for (int j = 0; j <= kiekND; j++) {
+            outFile << std::setw(10) << distrib(gen);
         }
-        *out <<"\n";
+        outFile << "\n";
     }
 }
 
-void splitStudents(std::string dataFileName, std::string newFileName){
-
+void splitStudents(std::string dataFileName, std::string newFileName) {
     std::vector<Studentas> mokiniai = readFile(dataFileName, true);
 
     std::ofstream outGood("good_" + newFileName);
@@ -283,14 +263,14 @@ void splitStudents(std::string dataFileName, std::string newFileName){
 
     if (mokiniai.empty()) return;
 
-    int kiekND = mokiniai[0].ND.size();
+    int kiekND = static_cast<int>(mokiniai[0].ND.size());
 
-    auto printHeader = [&](std::ostream& out){
+    auto printHeader = [&](std::ostream& out) {
         out << std::left
             << std::setw(14) << "Vardas"
             << std::setw(17) << "Pavarde";
 
-        for(int i = 1; i <= kiekND; i++)
+        for (int i = 1; i <= kiekND; i++)
             out << std::setw(10) << ("ND" + std::to_string(i));
 
         out << std::setw(10) << "Egz." << "\n";
@@ -299,118 +279,142 @@ void splitStudents(std::string dataFileName, std::string newFileName){
     printHeader(outGood);
     printHeader(outBad);
 
-    for(const auto& s : mokiniai){
-
-        std::ostream& out =
-            (s.namuDarbaiVid100 * 0.01 >= 5) ? outGood : outBad;
+    for (const auto& s : mokiniai) {
+        std::ostream& out = (galutinisVid(s) >= 5.0) ? outGood : outBad;
 
         out << std::left
             << std::setw(14) << s.vardas
             << std::setw(17) << s.pavarde;
 
-        for(auto nd : s.ND)
+        for (short int nd : s.ND)
             out << std::setw(10) << nd;
 
-        out << std::setw(10) << (int)s.egzaminas << "\n";
+        out << std::setw(10) << static_cast<int>(s.egzaminas) << "\n";
     }
 }
 
 void testFileCreation(int kiekStud, int kiekND, const std::string& fileName) {
     auto start = std::chrono::high_resolution_clock::now();
-
-    std::ofstream out(fileName);
-    if (!out) {
-        std::cout << "Nepavyko sukurti failo.\n";
-        return;
-    }
-
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<> distrib(0, 10);
-
-    // Header
-    out << std::left << std::setw(14) << "Vardas" << std::setw(17) << "Pavarde";
-    for(int i = 1; i <= kiekND; i++) out << std::setw(10) << ("ND" + std::to_string(i));
-    out << std::setw(10) << "Egz.\n";
-
-    // Studentai
-    for(int i = 1; i <= kiekStud; i++) {
-        out << std::left << std::setw(14) << ("Vardas" + std::to_string(i))
-            << std::setw(17) << ("Pavarde" + std::to_string(i));
-        for(int j = 0; j < kiekND; j++) out << std::setw(10) << distrib(gen);
-        out << "\n";
-    }
-
-    out.close();
-
+    generateFile(kiekStud, kiekND, fileName);
     auto end = std::chrono::high_resolution_clock::now();
+
     std::cout << "Failo sukurimo laikas: "
               << std::chrono::duration<double>(end - start).count() << " s\n";
 }
 
 void testDataProcessing(const std::string& fileName) {
-    using namespace std::chrono;
-
-    auto t0 = high_resolution_clock::now();
-    // Skaitymas
+    auto t0 = std::chrono::high_resolution_clock::now();
     std::vector<Studentas> students = readFile(fileName, true);
-    auto t1 = high_resolution_clock::now();
+    auto t1 = std::chrono::high_resolution_clock::now();
 
-    // Rūšiavimas į grupes
     std::vector<Studentas> good, bad;
-    for(const auto& s : students) {
-        if(s.namuDarbaiVid100 * 0.01 >= 5) good.push_back(s);
+    for (const auto& s : students) {
+        if (galutinisVid(s) >= 5.0) good.push_back(s);
         else bad.push_back(s);
     }
-    auto t2 = high_resolution_clock::now();
-
-    // Išvedimas į failus
-    std::ofstream outGood("good_" + fileName);
-    std::ofstream outBad("bad_" + fileName);
-
-    // Header
-    int kiekND = students.empty() ? 0 : students[0].ND.size();
-    auto printHeader = [&](std::ostream& out){
-        out << std::left << std::setw(14) << "Vardas"
-            << std::setw(17) << "Pavarde";
-        for(int i=1; i<=kiekND; i++) out << std::setw(10) << ("ND" + std::to_string(i));
-        out << std::setw(10) << "Egz.\n";
-    };
-    printHeader(outGood);
-    printHeader(outBad);
-
-    // Good
-    for(const auto& s : good){
-        outGood << std::left << std::setw(14) << s.vardas
-                << std::setw(17) << s.pavarde;
-        for(auto nd : s.ND) outGood << std::setw(10) << nd;
-        outGood << std::setw(10) << (int)s.egzaminas << "\n";
-    }
-
-    // Bad
-    for(const auto& s : bad){
-        outBad << std::left << std::setw(14) << s.vardas
-               << std::setw(17) << s.pavarde;
-        for(auto nd : s.ND) outBad << std::setw(10) << nd;
-        outBad << std::setw(10) << (int)s.egzaminas << "\n";
-    }
-
-    auto t3 = high_resolution_clock::now();
+    auto t2 = std::chrono::high_resolution_clock::now();
 
     std::cout << "Failo nuskaitymo laikas: "
-              << duration<double>(t1 - t0).count() << " s\n";
-    std::cout << "Studentu rusiavimo laikas: "
-              << duration<double>(t2 - t1).count() << " s\n";
-    std::cout << "Surusiuotu studentu isvedimo laikas: "
-              << duration<double>(t3 - t2).count() << " s\n";
+              << std::chrono::duration<double>(t1 - t0).count() << " s\n";
+    std::cout << "Studentu skirstymo laikas: "
+              << std::chrono::duration<double>(t2 - t1).count() << " s\n";
     std::cout << "Bendras laikas: "
-              << duration<double>(t3 - t0).count() << " s\n";
+              << std::chrono::duration<double>(t2 - t0).count() << " s\n";
 }
 
-void testTime(int testSize, int ndSize){
+void testTime(int testSize, int ndSize) {
     std::cout << "Dydis: " << testSize << "\n";
     testFileCreation(testSize, ndSize, "students.txt");
     testDataProcessing("students.txt");
-    return;
 }
 
+void splitVector1(const std::vector<Studentas>& studentai, std::vector<Studentas>& vargsiukai, std::vector<Studentas>& kietiakai) {
+    for (const auto& s : studentai) {
+        if (galutinisVid(s) < 5.0) vargsiukai.push_back(s);
+        else kietiakai.push_back(s);
+    }
+}
+
+void splitVector2(std::vector<Studentas>& studentai, std::vector<Studentas>& vargsiukai) {
+    for (auto it = studentai.begin(); it != studentai.end(); ) {
+        if (galutinisVid(*it) < 5.0) {
+            vargsiukai.push_back(*it);
+            it = studentai.erase(it);
+        } else {
+            ++it;
+        }
+    }
+}
+
+void splitVector3(std::vector<Studentas>& studentai, std::vector<Studentas>& vargsiukai) {
+    auto it = std::partition(studentai.begin(), studentai.end(),
+        [](const Studentas& s) {
+            return galutinisVid(s) >= 5.0;
+        });
+
+    for (auto i = it; i != studentai.end(); ++i) {
+        vargsiukai.push_back(*i);
+    }
+
+    studentai.erase(it, studentai.end());
+}
+
+void splitList1(const std::list<Studentas>& studentai, std::list<Studentas>& vargsiukai, std::list<Studentas>& kietiakai) {
+    for (const auto& s : studentai) {
+        if (galutinisVid(s) < 5.0) vargsiukai.push_back(s);
+        else kietiakai.push_back(s);
+    }
+}
+
+void splitList2(std::list<Studentas>& studentai, std::list<Studentas>& vargsiukai) {
+    for (auto it = studentai.begin(); it != studentai.end(); ) {
+        if (galutinisVid(*it) < 5.0) {
+            vargsiukai.push_back(*it);
+            it = studentai.erase(it);
+        } else {
+            ++it;
+        }
+    }
+}
+
+void splitList3(std::list<Studentas>& studentai, std::list<Studentas>& vargsiukai) {
+    for (auto it = studentai.begin(); it != studentai.end(); ) {
+        if (galutinisVid(*it) < 5.0) {
+            auto temp = it++;
+            vargsiukai.splice(vargsiukai.end(), studentai, temp);
+        } else {
+            ++it;
+        }
+    }
+}
+
+void splitDeque1(const std::deque<Studentas>& studentai, std::deque<Studentas>& vargsiukai, std::deque<Studentas>& kietiakai) {
+    for (const auto& s : studentai) {
+        if (galutinisVid(s) < 5.0) vargsiukai.push_back(s);
+        else kietiakai.push_back(s);
+    }
+}
+
+void splitDeque2(std::deque<Studentas>& studentai, std::deque<Studentas>& vargsiukai) {
+    for (auto it = studentai.begin(); it != studentai.end(); ) {
+        if (galutinisVid(*it) < 5.0) {
+            vargsiukai.push_back(*it);
+            it = studentai.erase(it);
+        } else {
+            ++it;
+        }
+    }
+}
+
+void splitDeque3(std::deque<Studentas>& studentai, std::deque<Studentas>& vargsiukai) {
+    auto it = std::partition(studentai.begin(), studentai.end(),
+        [](const Studentas& s) {
+            return galutinisVid(s) >= 5.0;
+        });
+
+    for (auto i = it; i != studentai.end(); ++i) {
+        vargsiukai.push_back(*i);
+    }
+
+    studentai.erase(it, studentai.end());
+}
