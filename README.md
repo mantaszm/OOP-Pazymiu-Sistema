@@ -1,10 +1,48 @@
 # Studentų pažymių programa
 
-Programa leidžia:
+## Paleidimas su `make`
+
+```bash
+make
+./programa
+```
+
+## Programos funkcijos
 
 - Įvesti studentų vardus, pavardes ir namų darbų bei egzamino pažymius.
 - Apskaičiuoti galutinius pažymius pagal **vidurkį** arba **medianą**.
 - Generuoti atsitiktinius vardus ir/ar pažymius pasirinkus tam tikrą režimą.
+
+## Versijos
+
+### v.pradinė
+Padarytas programos pagrindas
+Naudojami statiniai masyvai
+Rezultatas skaičiuojamas su mediana/vidurkiu
+
+### v0.1
+Galimybė generuoti pažymius
+Galimybė generuoti studentų vardus ir pavardes
+Dinaminės atminties masyvai/vektoriai
+Tvarkingesniė failų struktūra nei v.pradinė
+
+### v0.2
+Galimybė skaityti iš failo
+Galimybė rikiuoti rezultatus
+Failo skaitymo laikas
+
+### v0.3
+Klaidų sugavimas
+
+### v0.4
+Failų generavimas
+Failų išrūšiavimas į 2 failus
+Laiko yra matavimas
+
+### v1.0
+Galima atlikti laiko testavimus su vector, list ir deque konteineriais
+Tyrimas README.md faile
+Galima paleisti su makefile
 
 # Studentų duomenų tvarkymo programa – spartos analizė
 
@@ -17,17 +55,6 @@ Išmatuoti programos veikimo laiką generuojant failus ir apdorojant studentų d
 - Kiekvienam testui naudojamas skirtingas studentų skaičius: 10 000, 100 000, 1 000 000, 10 000 000
 - ND kiekis: 15
 - Laiką matuojame su `std::chrono::high_resolution_clock`
-
----
-
-# Paleidimas
-
-## Su `make`
-
-```bash
-make
-./programa
-```
 
 ---
 
