@@ -141,6 +141,8 @@ Atlikus testus su `std::vector` konteineriu, nustatyta, kad efektyviausia yra **
 
 Dėl šios priežasties testai su 1 000 000 įrašų nebuvo tęsiami, nes vykdymo laikas tapo itin ilgas.
 
+<img width="2000" height="1200" alt="vector_strategijos" src="https://github.com/user-attachments/assets/7dbc5b6b-f5c6-4e08-bc61-35d099669d6c" />
+
 ---
 
 ## `std::list` strategijų palyginimas
@@ -158,6 +160,8 @@ Dėl šios priežasties testai su 1 000 000 įrašų nebuvo tęsiami, nes vykdym
 Atliekant testus su `std::list` konteineriu pastebėta, kad visos trys strategijos veikia efektyviai, tačiau aiškiai išsiskiria **3 strategija**, kuri visais atvejais buvo greičiausia.
 
 Skirtingai nei `std::vector` atveju, **2 strategija su `std::list` pasirodė esanti efektyvi**. Taip yra todėl, kad `std::list` konteineryje elementų šalinimas vyksta pastoviu laiku (O(1)), nes nereikia perstumti kitų elementų atmintyje.
+
+<img width="2000" height="1200" alt="list_strategijos" src="https://github.com/user-attachments/assets/8479f7f0-5cfb-49b8-bd73-8ed8c9a7f9fb" />
 
 ---
 
@@ -185,6 +189,9 @@ Atliekant testus su `std::deque` konteineriu pastebėta, kad efektyviausiai veik
 - 100 000 įrašų: ~75.8 s  
 
 Todėl ši strategija nėra tinkama dideliems duomenų kiekiams.
+
+<img width="2000" height="1200" alt="deque_strategijos" src="https://github.com/user-attachments/assets/ffb4f261-d67b-4013-b19a-9dbb6a06d836" />
+
 ---
 
 # Galutinės išvados
